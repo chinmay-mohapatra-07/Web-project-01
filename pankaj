@@ -1,0 +1,37 @@
+import cv2
+import mediapipe as mp
+import time
+
+# Initialize
+mp_hands = mp.solutions.hands
+hands = mp_hands.Hands(min_detection_confidence=0.8)
+mp_draw = mp.solutions.drawing_utils
+
+cap = cv2.VideoCapture(0)
+print("System Ready! Show 5 fingers to take a photo.")
+
+while cap.isOpened():
+    success, img = cap.read()
+    if not success: break
+
+    img = cv2.flip(img, 1)
+    results = hands.process(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
+
+    if results.multi_hand_landmarks:
+        for handLms in results.multi_hand_landmarks:
+            mp_draw.draw_landm
+            arks(img, handLms, mp_hands.HAND_CONNECTIONS)
+            
+            # Simple Count: If index finger tip is above middle joint
+            if handLms.landmark[8].y < handLms.landmark[6].y:
+                filename = f"capture_{int(time.time())}.jpg"
+                cv2.imwrite(filename, img)
+                print(f"SUCCESS: Photo saved as {filename}")
+                time.sleep(2) # Wait 2 seconds so it doesn't take 100 photos
+
+    cv2.imshow("Hand Camera", img)
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        break
+
+cap.release()
+cv2.destroyAllWindows()
